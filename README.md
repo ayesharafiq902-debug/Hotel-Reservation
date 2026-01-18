@@ -32,7 +32,7 @@ Hotel-Management/
 └── pom.xml / build.gradle
 ________________________________________
 How to Build and Run the Project
-1.	Clone the repository:https://github.com/nehaBibi/HotelManagementSystem.git
+1.	Clone the repository:https://github.com/ayesharafiq902-debug/Hotel-Reservation.git
 git clone 
 2.	Open the project in your eclipse
 3.	Compile and run the project:
