@@ -1,0 +1,270 @@
+package SoftwareConstruction;
+
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+
+/* ======================= VALUE OBJECTS ======================= */
+
+class Name {
+    private final String value;
+
+    public Name(String value) {
+        if (value == null || value.trim().isEmpty())
+            throw new IllegalArgumentException("Name cannot be null or empty");
+        this.value = value;
+    }
+
+    public String getValue() {
+        return value;
+    }
+}
+
+class Address {
+    private final String details;
+
+    public Address(String details) {
+        if (details == null || details.trim().isEmpty())
+            throw new IllegalArgumentException("Address cannot be null or empty");
+        this.details = details;
+    }
+
+    public String getDetails() {
+        return details;
+    }
+}
+
+class CreditCard {
+    private final String cardNumber;
+
+    public CreditCard(String cardNumber) {
+        if (cardNumber == null || cardNumber.trim().isEmpty())
+            throw new IllegalArgumentException("Card number required");
+        this.cardNumber = cardNumber;
+    }
+
+    public String getCardNumber() {
+        return cardNumber;
+    }
+}
+
+class Money {
+    private final double amount;
+
+    public Money(double amount) {
+        if (amount < 0)
+            throw new IllegalArgumentException("Amount cannot be negative");
+        this.amount = amount;
+    }
+
+    public double getAmount() {
+        return amount;
+    }
+}
+/* ======================= CORE DOMAIN ======================= */
+
+class Guest {
+    private final Name name;
+    private final Address address;
+
+    private Guest(Name name, Address address) {
+        if (name == null || address == null)
+            throw new IllegalArgumentException("Guest info required");
+        this.name = name;
+        this.address = address;
+    }
+
+    public static Guest create(Name name, Address address) {
+        return new Guest(name, address);
+    }
+
+    public Name getName() {
+        return name;
+    }
+
+    public Address getAddress() {
+        return address;
+    }
+}
+
+class ReservorPayer {
+    private final int id;
+    private final CreditCard card;
+
+    private ReservorPayer(int id, CreditCard card) {
+        if (id <= 0)
+            throw new IllegalArgumentException("Invalid ID");
+        if (card == null)
+            throw new IllegalArgumentException("Card required");
+        this.id = id;
+        this.card = card;
+    }
+
+    public static ReservorPayer create(int id, CreditCard card) {
+        return new ReservorPayer(id, card);
+    }
+}
+/* Inserting Reservation classes and methods*/
+
+class Reservation {
+    private final LocalDate reservationDate;
+    private final LocalDate startDate;
+    private final LocalDate endDate;
+    private final int number;
+
+    private Reservation(LocalDate reservationDate, LocalDate startDate, LocalDate endDate, int number) {
+        if (reservationDate == null || startDate == null || endDate == null)
+            throw new IllegalArgumentException("Dates cannot be null");
+        if (endDate.isBefore(startDate))
+            throw new IllegalArgumentException("End date cannot be before start date");
+        if (number <= 0)
+            throw new IllegalArgumentException("Reservation number must be positive");
+
+        this.reservationDate = reservationDate;
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.number = number;
+    }
+
+    public static Reservation create(LocalDate reservationDate, LocalDate startDate, LocalDate endDate, int number) {
+        return new Reservation(reservationDate, startDate, endDate, number);
+    }
+
+    public int getNumber() {
+        return number;
+    }
+}
+enum RoomKind { SINGLE, DOUBLE, SUITE }
+
+class RoomType {
+    private final RoomKind kind;
+    private final Money cost;
+
+    public RoomType(RoomKind kind, Money cost) {
+        if (kind == null || cost == null)
+            throw new IllegalArgumentException("Room type info required");
+        this.kind = kind;
+        this.cost = cost;
+    }
+
+    public RoomKind getKind() {
+        return kind;
+    }
+}
+
+class Room {
+    private final int number;
+    private Guest occupant;
+
+    public Room(int number) {
+        if (number <= 0)
+            throw new IllegalArgumentException("Invalid room number");
+        this.number = number;
+    }
+
+    public boolean isAvailable() {
+        return occupant == null;
+    }
+
+    public void assignGuest(Guest guest) {
+        if (guest == null)
+            throw new IllegalArgumentException("Guest required");
+        if (!isAvailable())
+            throw new IllegalStateException("Room already occupied");
+        this.occupant = guest;
+    }
+
+    public void removeGuest() {
+        occupant = null;
+    }
+
+    public int getNumber() {
+        return number;
+    }
+}
+
+class Hotel {
+    private final Name name;
+    private final List<Room> rooms = new ArrayList<>();
+
+    public Hotel(Name name) {
+        if (name == null)
+            throw new IllegalArgumentException("Hotel name required");
+        this.name = name;
+    }
+
+    public void addRoom(Room room) {
+        if (room == null)
+            throw new IllegalArgumentException("Room required");
+        rooms.add(room);
+    }
+
+    public Room findAvailableRoom() {
+        return rooms.stream().filter(Room::isAvailable).findFirst().orElse(null);
+    }
+
+    public Reservation createReservation(LocalDate resDate, LocalDate start, LocalDate end, int number) {
+        return Reservation.create(resDate, start, end, number);
+    }
+
+    public String getHotelName() {
+        return name.getValue();
+    }
+}
+class HotelChain {
+    private final Name name;
+    private final List<Hotel> hotels = new ArrayList<>();
+
+    public HotelChain(Name name) {
+        if (name == null)
+            throw new IllegalArgumentException("Chain name required");
+        this.name = name;
+    }
+
+    public void addHotel(Hotel hotel) {
+        if (hotel == null)
+            throw new IllegalArgumentException("Hotel required");
+        hotels.add(hotel);
+    }
+
+    public ReservorPayer createReservorPayer(int id, CreditCard card) {
+        return ReservorPayer.create(id, card);
+    }
+}
+public class HotelManagementSystem {
+
+    public static void main(String[] args) {
+
+        HotelChain chain = new HotelChain(new Name("Serena Group"));
+
+        Hotel hotel = new Hotel(new Name("Avari Towers Karachi"));
+        Room room1 = new Room(101);
+        Room room2 = new Room(102);
+        hotel.addRoom(room1);
+        hotel.addRoom(room2);
+        chain.addHotel(hotel);
+
+        Guest guest = Guest.create(new Name("Ayesha Rafiq"), new Address("Karachi"));
+
+        ReservorPayer payer = chain.createReservorPayer(1, new CreditCard("4562-7891"));
+
+        Reservation reservation = hotel.createReservation(LocalDate.now(),
+                LocalDate.now().plusDays(1),
+                LocalDate.now().plusDays(3),
+                1001);
+
+        Room availableRoom = hotel.findAvailableRoom();
+        if (availableRoom != null) {
+            availableRoom.assignGuest(guest);
+
+            System.out.println("Hotel Name    : " + hotel.getHotelName());
+            System.out.println("Guest Checked In Successfully");
+            System.out.println("Guest Name    : " + guest.getName().getValue());
+            System.out.println("Guest Address : " + guest.getAddress().getDetails());
+            System.out.println("Room Number   : " + availableRoom.getNumber());
+            System.out.println("Reservation # : " + reservation.getNumber());
+        }
+
+        System.out.println("Hotel Management System running successfully.");
+    }
+}
